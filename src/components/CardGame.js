@@ -1,19 +1,49 @@
 import React, { useState } from 'react';
 
 const cardData = {
-  red: [
-    { id: 1, content: "Tu amigo te pide prestado dinero pero no te lo devuelve. ¿Cómo manejas la situación?" },
-    { id: 2, content: "Tu pareja constantemente llega tarde a sus citas. ¿Cómo abordas este problema?" },
-    { id: 3, content: "Un compañero de trabajo toma crédito por tu idea. ¿Qué haces?" },
-    { id: 4, content: "Tu vecino hace mucho ruido por las noches. ¿Cómo resuelves este conflicto?" },
-    { id: 5, content: "Un familiar critica constantemente tus decisiones. ¿Cómo manejas esta situación?" }
+  "red": [
+    { "id": 1, "content": "Tu mejor amigo comienza a salir con tu ex pareja sin decírtelo. ¿Cómo manejas la situación?" },
+    { "id": 2, "content": "Descubres que tu compañero de piso ha estado usando tus cosas sin permiso. ¿Qué haces?" },
+    { "id": 3, "content": "Tu jefe te asigna un proyecto importante pero no te da los recursos necesarios. ¿Cómo lo abordas?" },
+    { "id": 4, "content": "Un amigo constantemente cancela planes a último momento. ¿Cómo resuelves este conflicto?" },
+    { "id": 5, "content": "Tus padres no aprueban tu elección de carrera. ¿Cómo manejas esta situación?" },
+    { "id": 6, "content": "Tu pareja pasa demasiado tiempo en redes sociales y te sientes ignorado. ¿Qué haces?" },
+    { "id": 7, "content": "Un compañero de clase plagia tu trabajo y obtiene una mejor calificación. ¿Cómo procedes?" },
+    { "id": 8, "content": "Tu hermano/a menor siempre toma tus cosas sin pedir permiso. ¿Cómo abordas el problema?" },
+    { "id": 9, "content": "Te enteras de que un amigo ha estado hablando mal de ti a tus espaldas. ¿Qué haces?" },
+    { "id": 10, "content": "Tu grupo de amigos planea un viaje pero no puedes permitírtelo económicamente. ¿Cómo lo manejas?" },
+    { "id": 11, "content": "Tu compañero de trabajo constantemente llega tarde, afectando tu productividad. ¿Cómo lo resuelves?" },
+    { "id": 12, "content": "Tus vecinos organizan fiestas ruidosas cada fin de semana. ¿Cómo abordas la situación?" },
+    { "id": 13, "content": "Tu pareja quiere mudarse juntos pero tú no te sientes listo/a. ¿Cómo manejas el conflicto?" },
+    { "id": 14, "content": "Un profesor te acusa injustamente de hacer trampa en un examen. ¿Qué haces?" },
+    { "id": 15, "content": "Tu mejor amigo/a comienza a salir con alguien que no te agrada. ¿Cómo manejas la situación?" },
+    { "id": 16, "content": "Tus padres insisten en que dejes tu trabajo de medio tiempo para enfocarte en los estudios. ¿Cómo lo resuelves?" },
+    { "id": 17, "content": "Un compañero de equipo no está cumpliendo con su parte del trabajo en un proyecto grupal. ¿Qué haces?" },
+    { "id": 18, "content": "Tu pareja tiene celos de tu amistad con alguien del sexo opuesto. ¿Cómo manejas el conflicto?" },
+    { "id": 19, "content": "Descubres que tu mejor amigo/a ha estado mintiendo sobre algo importante. ¿Cómo lo abordas?" },
+    { "id": 20, "content": "Tu jefe te pide que trabajes horas extra sin paga adicional. ¿Cómo manejas esta situación?" }
   ],
-  blue: [
-    { id: 6, content: "¿Cuál es la importancia de la comunicación asertiva en la resolución de conflictos?" },
-    { id: 7, content: "¿Cómo puede la empatía ayudar a resolver conflictos interpersonales?" },
-    { id: 8, content: "¿Qué papel juega la escucha activa en la resolución de conflictos?" },
-    { id: 9, content: "¿Cómo puedes manejar tus emociones durante un conflicto?" },
-    { id: 10, content: "¿Cuáles son algunas estrategias efectivas para llegar a un compromiso en un conflicto?" }
+  "blue": [
+    { "id": 21, "content": "¿Cómo puede la técnica de 'yo-mensaje' mejorar la comunicación en un conflicto?" },
+    { "id": 22, "content": "¿Cuál es la diferencia entre un compromiso y una solución win-win en la resolución de conflictos?" },
+    { "id": 23, "content": "¿Cómo puedes identificar y manejar tus propios sesgos al abordar un conflicto?" },
+    { "id": 24, "content": "¿Qué papel juega la paciencia en la resolución efectiva de conflictos?" },
+    { "id": 25, "content": "¿Cómo puedes utilizar el humor de manera apropiada para aliviar la tensión en un conflicto?" },
+    { "id": 26, "content": "¿Cuáles son algunas señales de que un conflicto está escalando y cómo puedes prevenirlo?" },
+    { "id": 27, "content": "¿Cómo puedes practicar la auto-reflexión para mejorar tus habilidades de resolución de conflictos?" },
+    { "id": 28, "content": "¿Qué estrategias puedes utilizar para mantener la calma durante una discusión acalorada?" },
+    { "id": 29, "content": "¿Cómo puedes establecer límites saludables sin crear conflictos innecesarios?" },
+    { "id": 30, "content": "¿Cuál es la importancia de la validación emocional en la resolución de conflictos?" },
+    { "id": 31, "content": "¿Cómo puede la técnica de 'reencuadre' ayudar a ver un conflicto desde una nueva perspectiva?" },
+    { "id": 32, "content": "¿Qué papel juega la cultura en la forma en que las personas abordan los conflictos?" },
+    { "id": 33, "content": "¿Cómo puedes utilizar la 'escucha reflexiva' para mejorar la comunicación en un conflicto?" },
+    { "id": 34, "content": "¿Cuáles son algunas estrategias para manejar conflictos en el entorno digital o en redes sociales?" },
+    { "id": 35, "content": "¿Cómo puedes diferenciar entre un conflicto saludable y uno tóxico en una relación?" },
+    { "id": 36, "content": "¿Qué papel juega la asertividad en la resolución efectiva de conflictos?" },
+    { "id": 37, "content": "¿Cómo puedes utilizar la técnica de 'separar a la persona del problema' en un conflicto?" },
+    { "id": 38, "content": "¿Cuál es la importancia de reconocer y disculparse por tus propios errores en un conflicto?" },
+    { "id": 39, "content": "¿Cómo puedes manejar un conflicto con alguien que se niega a comunicarse o cooperar?" },
+    { "id": 40, "content": "¿Qué estrategias puedes utilizar para prevenir conflictos futuros después de resolver uno?" }
   ]
 };
 
