@@ -1,135 +1,234 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Check, SkipForward, Shuffle } from 'lucide-react';
 
 const cardData = {
-  "red": [
-    { "id": 1, "content": "Tu mejor amigo comienza a salir con tu ex pareja sin decírtelo. ¿Cómo manejas la situación?" },
-    { "id": 2, "content": "Descubres que tu compañero de piso ha estado usando tus cosas sin permiso. ¿Qué haces?" },
-    { "id": 3, "content": "Tu jefe te asigna un proyecto importante pero no te da los recursos necesarios. ¿Cómo lo abordas?" },
-    { "id": 4, "content": "Un amigo constantemente cancela planes a último momento. ¿Cómo resuelves este conflicto?" },
-    { "id": 5, "content": "Tus padres no aprueban tu elección de carrera. ¿Cómo manejas esta situación?" },
-    { "id": 6, "content": "Tu pareja pasa demasiado tiempo en redes sociales y te sientes ignorado. ¿Qué haces?" },
-    { "id": 7, "content": "Un compañero de clase plagia tu trabajo y obtiene una mejor calificación. ¿Cómo procedes?" },
-    { "id": 8, "content": "Tu hermano/a menor siempre toma tus cosas sin pedir permiso. ¿Cómo abordas el problema?" },
-    { "id": 9, "content": "Te enteras de que un amigo ha estado hablando mal de ti a tus espaldas. ¿Qué haces?" },
-    { "id": 10, "content": "Tu grupo de amigos planea un viaje pero no puedes permitírtelo económicamente. ¿Cómo lo manejas?" },
-    { "id": 11, "content": "Tu compañero de trabajo constantemente llega tarde, afectando tu productividad. ¿Cómo lo resuelves?" },
-    { "id": 12, "content": "Tus vecinos organizan fiestas ruidosas cada fin de semana. ¿Cómo abordas la situación?" },
-    { "id": 13, "content": "Tu pareja quiere mudarse juntos pero tú no te sientes listo/a. ¿Cómo manejas el conflicto?" },
-    { "id": 14, "content": "Un profesor te acusa injustamente de hacer trampa en un examen. ¿Qué haces?" },
-    { "id": 15, "content": "Tu mejor amigo/a comienza a salir con alguien que no te agrada. ¿Cómo manejas la situación?" },
-    { "id": 16, "content": "Tus padres insisten en que dejes tu trabajo de medio tiempo para enfocarte en los estudios. ¿Cómo lo resuelves?" },
-    { "id": 17, "content": "Un compañero de equipo no está cumpliendo con su parte del trabajo en un proyecto grupal. ¿Qué haces?" },
-    { "id": 18, "content": "Tu pareja tiene celos de tu amistad con alguien del sexo opuesto. ¿Cómo manejas el conflicto?" },
-    { "id": 19, "content": "Descubres que tu mejor amigo/a ha estado mintiendo sobre algo importante. ¿Cómo lo abordas?" },
-    { "id": 20, "content": "Tu jefe te pide que trabajes horas extra sin paga adicional. ¿Cómo manejas esta situación?" }
+  "individual": [
+    {
+      "category": "Comunicación efectiva",
+      "questions": [
+        "¿Cómo puedes mejorar tu escucha activa?",
+        "¿Qué estrategias usas para comunicarte claramente?"
+      ],
+      "roleplaying": "Practica dar feedback constructivo a un compañero"
+    },
+    {
+      "category": "Manejo del estrés",
+      "questions": [
+        "¿Cuáles son tus técnicas favoritas para relajarte?",
+        "¿Cómo manejas la presión en situaciones difíciles?"
+      ],
+      "roleplaying": "Demuestra una técnica de respiración para reducir el estrés"
+    }
   ],
-  "blue": [
-    { "id": 21, "content": "¿Cómo puede la técnica de 'yo-mensaje' mejorar la comunicación en un conflicto?" },
-    { "id": 22, "content": "¿Cuál es la diferencia entre un compromiso y una solución win-win en la resolución de conflictos?" },
-    { "id": 23, "content": "¿Cómo puedes identificar y manejar tus propios sesgos al abordar un conflicto?" },
-    { "id": 24, "content": "¿Qué papel juega la paciencia en la resolución efectiva de conflictos?" },
-    { "id": 25, "content": "¿Cómo puedes utilizar el humor de manera apropiada para aliviar la tensión en un conflicto?" },
-    { "id": 26, "content": "¿Cuáles son algunas señales de que un conflicto está escalando y cómo puedes prevenirlo?" },
-    { "id": 27, "content": "¿Cómo puedes practicar la auto-reflexión para mejorar tus habilidades de resolución de conflictos?" },
-    { "id": 28, "content": "¿Qué estrategias puedes utilizar para mantener la calma durante una discusión acalorada?" },
-    { "id": 29, "content": "¿Cómo puedes establecer límites saludables sin crear conflictos innecesarios?" },
-    { "id": 30, "content": "¿Cuál es la importancia de la validación emocional en la resolución de conflictos?" },
-    { "id": 31, "content": "¿Cómo puede la técnica de 'reencuadre' ayudar a ver un conflicto desde una nueva perspectiva?" },
-    { "id": 32, "content": "¿Qué papel juega la cultura en la forma en que las personas abordan los conflictos?" },
-    { "id": 33, "content": "¿Cómo puedes utilizar la 'escucha reflexiva' para mejorar la comunicación en un conflicto?" },
-    { "id": 34, "content": "¿Cuáles son algunas estrategias para manejar conflictos en el entorno digital o en redes sociales?" },
-    { "id": 35, "content": "¿Cómo puedes diferenciar entre un conflicto saludable y uno tóxico en una relación?" },
-    { "id": 36, "content": "¿Qué papel juega la asertividad en la resolución efectiva de conflictos?" },
-    { "id": 37, "content": "¿Cómo puedes utilizar la técnica de 'separar a la persona del problema' en un conflicto?" },
-    { "id": 38, "content": "¿Cuál es la importancia de reconocer y disculparse por tus propios errores en un conflicto?" },
-    { "id": 39, "content": "¿Cómo puedes manejar un conflicto con alguien que se niega a comunicarse o cooperar?" },
-    { "id": 40, "content": "¿Qué estrategias puedes utilizar para prevenir conflictos futuros después de resolver uno?" }
+  "group": [
+    {
+      "category": "Trabajo en equipo",
+      "questions": [
+        "¿Cómo fomentas la colaboración en un grupo?",
+        "¿Qué haces cuando hay un conflicto en el equipo?"
+      ],
+      "roleplaying": "Organiza una actividad de team building para tu grupo"
+    },
+    {
+      "category": "Liderazgo",
+      "questions": [
+        "¿Qué cualidades crees que debe tener un buen líder?",
+        "¿Cómo motivarías a un equipo desmotivado?"
+      ],
+      "roleplaying": "Dirige una breve reunión de equipo para establecer objetivos"
+    }
   ]
 };
 
+const MenuCard = ({ title, color, onClick }) => (
+  <div 
+    className={`w-64 h-96 ${color} rounded-xl shadow-2xl cursor-pointer transform transition-transform duration-300 hover:scale-105`}
+    onClick={onClick}
+  >
+    <div className="h-full flex flex-col items-center justify-center p-6 text-white">
+      <h3 className="text-2xl font-bold text-center mb-4">{title}</h3>
+      <div className="text-6xl mb-4">?</div>
+      <p className="text-center">Haz clic para comenzar</p>
+    </div>
+  </div>
+);
+
+const QuestionCard = ({ category, question, isRoleplaying }) => (
+  <div className="w-64 h-96 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-2xl p-6 flex flex-col text-white">
+    <h3 className="text-xl font-bold mb-4">{category}</h3>
+    <div className="flex-grow flex items-center justify-center">
+      <p className="text-center">{question}</p>
+    </div>
+    {isRoleplaying && (
+      <p className="text-sm italic mt-4">Este es un escenario de roleplaying</p>
+    )}
+  </div>
+);
+
 const CardGame = ({ onBack }) => {
-  const [gameState, setGameState] = useState('start');
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [deck, setDeck] = useState('');
+  const [gameState, setGameState] = useState('menu');
+  const [mode, setMode] = useState(null);
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [completedCategories, setCompletedCategories] = useState([]);
+  const [achievements, setAchievements] = useState(0);
+  const [remainingCategories, setRemainingCategories] = useState([]);
+  const [showQuestion, setShowQuestion] = useState(false);
 
-  const startGame = () => {
-    setGameState('playing');
-  };
+  useEffect(() => {
+    if (mode) {
+      setRemainingCategories([...Array(cardData[mode].length).keys()]);
+    }
+  }, [mode]);
 
-  const selectCard = (deckColor) => {
-    const randomIndex = Math.floor(Math.random() * cardData[deckColor].length);
-    setSelectedCard(cardData[deckColor][randomIndex]);
-    setDeck(deckColor);
+  const selectMode = (selectedMode) => {
+    setMode(selectedMode);
+    setGameState('randomMenu');
+    resetGame();
   };
 
   const resetGame = () => {
-    setSelectedCard(null);
-    setDeck('');
+    setCurrentCategoryIndex(0);
+    setCurrentQuestionIndex(0);
+    setCompletedCategories([]);
+    setAchievements(0);
+    setShowQuestion(false);
+  };
+
+  const startRandomQuestion = () => {
+    if (remainingCategories.length > 0) {
+      const randomIndex = Math.floor(Math.random() * remainingCategories.length);
+      setCurrentCategoryIndex(remainingCategories[randomIndex]);
+      setCurrentQuestionIndex(0);
+      setShowQuestion(true);
+      setGameState('playing');
+    } else {
+      setGameState('completed');
+    }
+  };
+
+  const handleComplete = () => {
+    if (currentQuestionIndex < 2) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      const category = cardData[mode][currentCategoryIndex].category;
+      if (!completedCategories.includes(category)) {
+        setCompletedCategories([...completedCategories, category]);
+        setAchievements(achievements + 1);
+      }
+      moveToNextCategory(true);
+    }
+  };
+
+  const handleSkip = () => {
+    moveToNextCategory(false);
+  };
+
+  const moveToNextCategory = (completed) => {
+    if (!completed) {
+      setRemainingCategories([...remainingCategories, currentCategoryIndex]);
+    } else {
+      setRemainingCategories(remainingCategories.filter(i => i !== currentCategoryIndex));
+    }
+    
+    setGameState('randomMenu');
+    setShowQuestion(false);
+  };
+
+  const getCurrentQuestion = () => {
+    const category = cardData[mode][currentCategoryIndex];
+    if (currentQuestionIndex < 2) {
+      return category.questions[currentQuestionIndex];
+    }
+    return category.roleplaying;
+  };
+
+  const renderContent = () => {
+    switch (gameState) {
+      case 'menu':
+        return (
+          <div className="flex space-x-8">
+            <MenuCard title="Preguntas Individuales" color="bg-red-500" onClick={() => selectMode('individual')} />
+            <MenuCard title="Preguntas Grupales" color="bg-blue-500" onClick={() => selectMode('group')} />
+          </div>
+        );
+      case 'randomMenu':
+        return (
+          <div className="flex flex-col items-center space-y-4">
+            <h3 className="text-2xl font-bold mb-4 text-purple-700">Modo: {mode === 'individual' ? 'Individual' : 'Grupal'}</h3>
+            <button
+              onClick={startRandomQuestion}
+              className="px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition duration-300 flex items-center text-lg font-semibold"
+            >
+              <Shuffle size={24} className="mr-2" /> Pregunta al Azar
+            </button>
+          </div>
+        );
+      case 'playing':
+        const category = cardData[mode][currentCategoryIndex];
+        return (
+          <div className="flex flex-col items-center space-y-4">
+            {showQuestion && (
+              <QuestionCard 
+                category={category.category}
+                question={getCurrentQuestion()}
+                isRoleplaying={currentQuestionIndex === 2}
+              />
+            )}
+            <div className="flex space-x-4 mt-4">
+              <button
+                onClick={handleComplete}
+                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 flex items-center"
+              >
+                <Check size={20} className="mr-2" /> Completado
+              </button>
+              <button
+                onClick={handleSkip}
+                className="px-4 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition duration-300 flex items-center"
+              >
+                <SkipForward size={20} className="mr-2" /> Saltar
+              </button>
+            </div>
+          </div>
+        );
+      case 'completed':
+        return (
+          <div className="text-center">
+            <h3 className="text-2xl font-bold mb-4 text-purple-700">¡Felicidades!</h3>
+            <p className="mb-4">Has completado todas las categorías de este modo.</p>
+            <button
+              onClick={() => setGameState('menu')}
+              className="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition duration-300"
+            >
+              Volver al Menú Principal
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-green-800 to-green-600 p-4">
-      <div className="bg-green-700 border-4 border-yellow-600 rounded-lg p-4 sm:p-8 w-full max-w-4xl shadow-2xl">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-yellow-300 text-center">Juego de Resolución de Conflictos</h2>
-        
-        {gameState === 'start' ? (
-          <div className="text-center">
-            <p className="text-white mb-4">¡Bienvenido al juego de resolución de conflictos! Elige una baraja para comenzar.</p>
-            <button 
-              onClick={startGame} 
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-yellow-500 text-black font-bold rounded-lg shadow hover:bg-yellow-400 transition duration-300 transform hover:scale-105"
-            >
-              JUGAR
-            </button>
-          </div>
-        ) : (
-          <>
-            {!selectedCard ? (
-              <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-8">
-                <div className="text-center">
-                  <div 
-                    className="w-full sm:w-40 h-40 sm:h-60 bg-red-600 rounded-lg shadow-lg cursor-pointer transform hover:scale-105 transition duration-300 flex items-center justify-center text-white font-bold"
-                    onClick={() => selectCard('red')}
-                  >
-                    ESCENARIOS
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div 
-                    className="w-full sm:w-40 h-40 sm:h-60 bg-blue-600 rounded-lg shadow-lg cursor-pointer transform hover:scale-105 transition duration-300 flex items-center justify-center text-white font-bold"
-                    onClick={() => selectCard('blue')}
-                  >
-                    PREGUNTAS
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className={`max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden ${deck === 'red' ? 'border-red-500' : 'border-blue-500'} border-4`}>
-                <div className="p-4 sm:p-8">
-                  <div className="uppercase tracking-wide text-sm font-semibold mb-2 text-center">
-                    {deck === 'red' ? 'Escenario' : 'Pregunta'}
-                  </div>
-                  <p className="text-gray-700 text-base sm:text-lg mb-4">{selectedCard.content}</p>
-                  <div className="text-center">
-                    <button
-                      onClick={resetGame}
-                      className="px-4 sm:px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300 transform hover:scale-105"
-                    >
-                      Siguiente carta
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-purple-600 p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl mb-4">
+        <h2 className="text-2xl font-bold mb-6 text-center text-purple-700">Juego de Resolución de Conflictos</h2>
+        {renderContent()}
       </div>
       
-      <button 
-        onClick={onBack} 
-        className="mt-6 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition duration-300"
-      >
-        Volver a Juegos
+      <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md">
+        <h3 className="text-xl font-semibold mb-2 text-purple-700">Logros</h3>
+        <p className="text-gray-700">Categorías completadas: {achievements} / {cardData.individual.length + cardData.group.length}</p>
+        <div className="mt-2 bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-purple-600 h-2.5 rounded-full"
+            style={{ width: `${(achievements / (cardData.individual.length + cardData.group.length)) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      <button onClick={onBack} className="mt-6 px-4 py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition duration-300 flex items-center">
+        <ArrowLeft size={20} className="mr-2" /> Volver a Juegos
       </button>
     </div>
   );

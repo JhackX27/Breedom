@@ -18,13 +18,18 @@ const GameCard = ({ title, description, onPlay }) => (
 
 const Games = () => {
   const [selectedGame, setSelectedGame] = useState(null);
+  const [achievements, setAchievements] = useState(0);
 
   const handlePlayGame = (gameName) => {
     setSelectedGame(gameName);
   };
 
+  const updateAchievements = (newAchievements) => {
+    setAchievements(newAchievements);
+  };
+
   if (selectedGame === 'CardGame') {
-    return <CardGame onBack={() => setSelectedGame(null)} />;
+    return <CardGame onBack={() => setSelectedGame(null)} updateAchievements={updateAchievements} />;
   }
 
   return (
@@ -36,16 +41,11 @@ const Games = () => {
           description="Aprende a manejar situaciones difíciles"
           onPlay={() => handlePlayGame('CardGame')}
         />
-        <GameCard 
-          title="Concentración" 
-          description="Aumenta tu enfoque" 
-          onPlay={() => handlePlayGame('ConcentrationGame')}
-        />
-        <GameCard 
-          title="Lógica" 
-          description="Desarrolla tu pensamiento lógico" 
-          onPlay={() => handlePlayGame('LogicGame')}
-        />
+        {/* Otros juegos aquí */}
+      </div>
+      <div className="mt-6 p-4 bg-blue-100 rounded-lg">
+        <h3 className="text-xl font-semibold text-blue-800 mb-2">Logros</h3>
+        <p className="text-blue-700">Has completado {achievements} categorías de preguntas.</p>
       </div>
     </div>
   );

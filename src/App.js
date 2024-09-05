@@ -10,6 +10,7 @@ import Profile from './components/Profile';
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [points, setPoints] = useState(500);
+  const [achievements, setAchievements] = useState(0);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -18,13 +19,13 @@ function App() {
       case 'friends':
         return <Friends />;
       case 'games':
-        return <Games />;
+        return <Games achievements={achievements} setAchievements={setAchievements} />;
       case 'redeem':
         return <Redeem points={points} setPoints={setPoints} />;
       case 'ads':
         return <Ads />;
       case 'profile':
-        return <Profile points={points} />;
+        return <Profile points={points} achievements={achievements} />;
       default:
         return <Home />;
     }
