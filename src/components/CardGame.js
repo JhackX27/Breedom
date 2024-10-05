@@ -1,237 +1,291 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Check, SkipForward, Shuffle } from 'lucide-react';
 
-const cardData = {
-  "individual": [
+// JSON con las preguntas y las dinámicas de juego
+const gameData = {
+  preguntas: [
     {
-      "category": "Comunicación efectiva",
-      "questions": [
-        "¿Cómo puedes mejorar tu escucha activa?",
-        "¿Qué estrategias usas para comunicarte claramente?"
-      ],
-      "roleplaying": "Practica dar feedback constructivo a un compañero"
+      tipo: "pregunta",
+      texto: "¿Qué suele preocuparte en los momentos en que puedes estar solo/a? ¿Por qué y qué podrías esperar que pase si no haces algo al respecto?"
     },
     {
-      "category": "Manejo del estrés",
-      "questions": [
-        "¿Cuáles son tus técnicas favoritas para relajarte?",
-        "¿Cómo manejas la presión en situaciones difíciles?"
-      ],
-      "roleplaying": "Demuestra una técnica de respiración para reducir el estrés"
-    }
+      tipo: "pregunta",
+      texto: "¿Alguna vez has pensado que lo que haces no tiene sentido? ¿Qué te mantiene haciendo lo que haces diariamente?"
+    },
+    {
+      tipo: "pregunta",
+      texto: "Si la vida fuera siempre como quisieras, ¿qué tendrías ahora mismo?"
+    },
+    {
+      tipo: "pregunta",
+      texto: "Si la vida siempre estuviera en tu contra, ¿qué crees que habría pasado contigo? ¿Qué harías para remediarlo?"
+    },
+    {
+      tipo: "pregunta",
+      texto: "¿Qué has hecho últimamente para evitar realizar algo importante para ti?"
+    },
+    {
+      tipo: "pregunta",
+      texto: "¿Qué esperas lograr al final del año? ¿Por qué es importante para ti hacerlo?"
+    },
+    {
+      tipo: "pregunta",
+      texto: "¿Cómo consideras que alguien podría establecer una comunicación sincera contigo?"
+    },
+    // Puedes seguir agregando todas las preguntas aquí ...
   ],
-  "group": [
+  roleplaying: [
     {
-      "category": "Trabajo en equipo",
-      "questions": [
-        "¿Cómo fomentas la colaboración en un grupo?",
-        "¿Qué haces cuando hay un conflicto en el equipo?"
-      ],
-      "roleplaying": "Organiza una actividad de team building para tu grupo"
+      tipo: "roleplaying",
+      texto: "Frente a ti estás tú mismo/a. ¿Cómo le hablarías a tu yo del futuro? Plantea al menos cuatro interrogantes."
     },
     {
-      "category": "Liderazgo",
-      "questions": [
-        "¿Qué cualidades crees que debe tener un buen líder?",
-        "¿Cómo motivarías a un equipo desmotivado?"
-      ],
-      "roleplaying": "Dirige una breve reunión de equipo para establecer objetivos"
-    }
+      tipo: "roleplaying",
+      texto: "Frente a ti está un estudiante de la nueva generación. Eres un profesor que debe enseñarle lo que podrías haber hecho en su lugar."
+    },
+    {
+      tipo: "roleplaying",
+      texto: "Me corresponde ser una persona que está frente a un escenario con muchos espectadores porque he publicado mi biografía mundialmente aclamada."
+    },
+    // Más preguntas de roleplaying aquí ...
   ]
 };
 
-const MenuCard = ({ title, color, onClick }) => (
-  <div 
-    className={`w-64 h-96 ${color} rounded-xl shadow-2xl cursor-pointer transform transition-transform duration-300 hover:scale-105`}
-    onClick={onClick}
-  >
-    <div className="h-full flex flex-col items-center justify-center p-6 text-white">
-      <h3 className="text-2xl font-bold text-center mb-4">{title}</h3>
-      <div className="text-6xl mb-4">?</div>
-      <p className="text-center">Haz clic para comenzar</p>
-    </div>
-  </div>
-);
+const LocalMultiplayerCardGame = () => {
+  const [gameState, setGameState] = useState('setup');
+  const [numPlayers, setNumPlayers] = useState(2);
+  const [players, setPlayers] = useState([]);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [targetPlayerIndex, setTargetPlayerIndex] = useState(null);
+  const [timer, setTimer] = useState(600); // 10 minutos = 600 segundos
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-const QuestionCard = ({ category, question, isRoleplaying }) => (
-  <div className="w-64 h-96 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-2xl p-6 flex flex-col text-white">
-    <h3 className="text-xl font-bold mb-4">{category}</h3>
-    <div className="flex-grow flex items-center justify-center">
-      <p className="text-center">{question}</p>
-    </div>
-    {isRoleplaying && (
-      <p className="text-sm italic mt-4">Este es un escenario de roleplaying</p>
-    )}
-  </div>
-);
-
-const CardGame = ({ onBack }) => {
-  const [gameState, setGameState] = useState('menu');
-  const [mode, setMode] = useState(null);
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [completedCategories, setCompletedCategories] = useState([]);
-  const [achievements, setAchievements] = useState(0);
-  const [remainingCategories, setRemainingCategories] = useState([]);
-  const [showQuestion, setShowQuestion] = useState(false);
+  // Se combinan las preguntas y las dinámicas roleplaying
+  const combinedQuestions = [...gameData.preguntas, ...gameData.roleplaying];
 
   useEffect(() => {
-    if (mode) {
-      setRemainingCategories([...Array(cardData[mode].length).keys()]);
+    if (isTimerRunning) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
+      }, 1000);
+      return () => clearInterval(interval);
     }
-  }, [mode]);
+  }, [isTimerRunning]);
 
-  const selectMode = (selectedMode) => {
-    setMode(selectedMode);
-    setGameState('randomMenu');
-    resetGame();
+  const setupGame = () => {
+    const shuffledQuestions = [...combinedQuestions].sort(() => 0.5 - Math.random());
+    const newPlayers = Array.from({ length: numPlayers }, (_, index) => ({
+      id: index,
+      name: `Jugador ${index + 1}`,
+      cards: shuffledQuestions.slice(index * 5, (index + 1) * 5),
+      starsReceived: 0,
+      availableStars: 5,
+    }));
+    setPlayers(newPlayers);
+    setGameState('playing');
   };
 
-  const resetGame = () => {
-    setCurrentCategoryIndex(0);
-    setCurrentQuestionIndex(0);
-    setCompletedCategories([]);
-    setAchievements(0);
-    setShowQuestion(false);
+  const selectCard = (cardIndex) => {
+    setSelectedCard(cardIndex);
+    setTargetPlayerIndex(null);
+    setTimer(600); // Reiniciar el temporizador a 10 minutos
+    setIsTimerRunning(true);
   };
 
-  const startRandomQuestion = () => {
-    if (remainingCategories.length > 0) {
-      const randomIndex = Math.floor(Math.random() * remainingCategories.length);
-      setCurrentCategoryIndex(remainingCategories[randomIndex]);
-      setCurrentQuestionIndex(0);
-      setShowQuestion(true);
-      setGameState('playing');
+  const selectTargetPlayer = (playerIndex) => {
+    setTargetPlayerIndex(playerIndex);
+  };
+
+  const handleAnswer = (answered) => {
+    setIsTimerRunning(false);
+    if (answered) {
+      setGameState('rating');
     } else {
-      setGameState('completed');
+      nextTurn();
     }
   };
 
-  const handleComplete = () => {
-    if (currentQuestionIndex < 2) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      const category = cardData[mode][currentCategoryIndex].category;
-      if (!completedCategories.includes(category)) {
-        setCompletedCategories([...completedCategories, category]);
-        setAchievements(achievements + 1);
-      }
-      moveToNextCategory(true);
+  const ratePlayers = (ratingPlayerIndex, stars) => {
+    setPlayers(prevPlayers =>
+      prevPlayers.map((player, index) => {
+        if (index === currentPlayerIndex && index !== ratingPlayerIndex) {
+          return { ...player, starsReceived: player.starsReceived + stars };
+        }
+        if (index === ratingPlayerIndex) {
+          return { ...player, availableStars: player.availableStars - stars };
+        }
+        return player;
+      })
+    );
+  };
+
+  const nextTurn = () => {
+    setPlayers(prevPlayers => {
+      const updatedPlayers = [...prevPlayers];
+      updatedPlayers[currentPlayerIndex].cards = updatedPlayers[currentPlayerIndex].cards.filter(
+        (_, i) => i !== selectedCard
+      );
+      return updatedPlayers;
+    });
+    setSelectedCard(null);
+    setTargetPlayerIndex(null);
+    setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % numPlayers);
+    setGameState('playing');
+
+    if (players.every(player => player.cards.length === 0)) {
+      setGameState('gameOver');
     }
   };
 
-  const handleSkip = () => {
-    moveToNextCategory(false);
-  };
+  const renderSetup = () => (
+    <div className="flex flex-col items-center space-y-4">
+      <h2 className="text-2xl font-bold">Configurar Juego</h2>
+      <div className="flex items-center space-x-2">
+        <label htmlFor="numPlayers">Número de Jugadores:</label>
+        <input
+          id="numPlayers"
+          type="number"
+          min="2"
+          max="8"
+          value={numPlayers}
+          onChange={(e) => setNumPlayers(Math.max(2, Math.min(8, parseInt(e.target.value))))}
+          className="border rounded px-2 py-1"
+        />
+      </div>
+      <button
+        onClick={setupGame}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Comenzar Juego
+      </button>
+    </div>
+  );
 
-  const moveToNextCategory = (completed) => {
-    if (!completed) {
-      setRemainingCategories([...remainingCategories, currentCategoryIndex]);
-    } else {
-      setRemainingCategories(remainingCategories.filter(i => i !== currentCategoryIndex));
-    }
-    
-    setGameState('randomMenu');
-    setShowQuestion(false);
-  };
-
-  const getCurrentQuestion = () => {
-    const category = cardData[mode][currentCategoryIndex];
-    if (currentQuestionIndex < 2) {
-      return category.questions[currentQuestionIndex];
-    }
-    return category.roleplaying;
-  };
-
-  const renderContent = () => {
-    switch (gameState) {
-      case 'menu':
-        return (
-          <div className="flex space-x-8">
-            <MenuCard title="Preguntas Individuales" color="bg-red-500" onClick={() => selectMode('individual')} />
-            <MenuCard title="Preguntas Grupales" color="bg-blue-500" onClick={() => selectMode('group')} />
+  const renderPlaying = () => (
+    <div className="flex flex-col items-center space-y-4">
+      <h2 className="text-2xl font-bold">Turno de {players[currentPlayerIndex].name}</h2>
+      <div className="flex space-x-2">
+        {players[currentPlayerIndex].cards.map((card, index) => (
+          <div
+            key={index}
+            onClick={() => selectCard(index)}
+            className={`w-20 h-32 border rounded flex items-center justify-center cursor-pointer ${
+              selectedCard === index ? 'bg-blue-200' : 'bg-white'
+            }`}
+          >
+            {selectedCard === index ? card.texto : '?'}
           </div>
-        );
-      case 'randomMenu':
-        return (
-          <div className="flex flex-col items-center space-y-4">
-            <h3 className="text-2xl font-bold mb-4 text-purple-700">Modo: {mode === 'individual' ? 'Individual' : 'Grupal'}</h3>
-            <button
-              onClick={startRandomQuestion}
-              className="px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition duration-300 flex items-center text-lg font-semibold"
-            >
-              <Shuffle size={24} className="mr-2" /> Pregunta al Azar
-            </button>
-          </div>
-        );
-      case 'playing':
-        const category = cardData[mode][currentCategoryIndex];
-        return (
-          <div className="flex flex-col items-center space-y-4">
-            {showQuestion && (
-              <QuestionCard 
-                category={category.category}
-                question={getCurrentQuestion()}
-                isRoleplaying={currentQuestionIndex === 2}
-              />
+        ))}
+      </div>
+      {selectedCard !== null && (
+        <div className="mt-4">
+          <p>Selecciona a quién hacer la pregunta:</p>
+          <div className="flex space-x-2 mt-2">
+            {players.map((player, index) =>
+              index !== currentPlayerIndex && (
+                <button
+                  key={index}
+                  onClick={() => selectTargetPlayer(index)}
+                  className={`px-2 py-1 border rounded ${
+                    targetPlayerIndex === index ? 'bg-green-200' : 'bg-white'
+                  }`}
+                >
+                  {player.name}
+                </button>
+              )
             )}
-            <div className="flex space-x-4 mt-4">
-              <button
-                onClick={handleComplete}
-                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 flex items-center"
-              >
-                <Check size={20} className="mr-2" /> Completado
-              </button>
-              <button
-                onClick={handleSkip}
-                className="px-4 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition duration-300 flex items-center"
-              >
-                <SkipForward size={20} className="mr-2" /> Saltar
-              </button>
-            </div>
           </div>
-        );
-      case 'completed':
-        return (
-          <div className="text-center">
-            <h3 className="text-2xl font-bold mb-4 text-purple-700">¡Felicidades!</h3>
-            <p className="mb-4">Has completado todas las categorías de este modo.</p>
+        </div>
+      )}
+      {targetPlayerIndex !== null && (
+        <div className="mt-4">
+          <p>Tiempo restante: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')} minutos</p>
+          <div className="flex space-x-2 mt-2">
             <button
-              onClick={() => setGameState('menu')}
-              className="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition duration-300"
+              onClick={() => handleAnswer(true)}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Volver al Menú Principal
+              Contestó
+            </button>
+            <button
+              onClick={() => handleAnswer(false)}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              No Contestó
             </button>
           </div>
-        );
-      default:
-        return null;
-    }
-  };
+        </div>
+      )}
+    </div>
+  );
+
+  const renderRating = () => (
+    <div className="flex flex-col items-center space-y-4">
+      <h2 className="text-2xl font-bold">Calificar Respuesta</h2>
+      <p>¿Quién quiere dar estrellas a {players[currentPlayerIndex].name}?</p>
+      <div className="flex flex-wrap justify-center gap-4">
+        {players.map((player, index) =>
+          index !== currentPlayerIndex && (
+            <div key={index} className="flex flex-col items-center">
+              <p>{player.name} (Estrellas disponibles: {player.availableStars})</p>
+              <div className="flex space-x-1">
+                {[1, 2, 3, 4, 5].map((stars) => (
+                  <button
+                    key={stars}
+                    onClick={() => ratePlayers(index, stars)}
+                    disabled={player.availableStars < stars}
+                    className={`px-2 py-1 border rounded ${
+                      player.availableStars >= stars ? 'bg-yellow-200 hover:bg-yellow-300' : 'bg-gray-200'
+                    }`}
+                  >
+                    {stars} ★
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        )}
+      </div>
+      <button
+        onClick={nextTurn}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Siguiente Turno
+      </button>
+    </div>
+  );
+
+  const renderGameOver = () => (
+    <div className="flex flex-col items-center space-y-4">
+      <h2 className="text-2xl font-bold">Juego Terminado</h2>
+      <p>Resultados Finales:</p>
+      {players.sort((a, b) => b.starsReceived - a.starsReceived).map((player, index) => (
+        <div key={index} className="flex items-center space-x-2">
+          <span>{index + 1}.</span>
+          <span>{player.name}</span>
+          <span>{player.starsReceived} ★</span>
+        </div>
+      ))}
+      <button
+        onClick={() => setGameState('setup')}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Jugar de Nuevo
+      </button>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-purple-600 p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl mb-4">
-        <h2 className="text-2xl font-bold mb-6 text-center text-purple-700">Juego de Resolución de Conflictos</h2>
-        {renderContent()}
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl w-full">
+        <h1 className="text-3xl font-bold mb-6 text-center">Juego de Cartas de Preguntas</h1>
+        {gameState === 'setup' && renderSetup()}
+        {gameState === 'playing' && renderPlaying()}
+        {gameState === 'rating' && renderRating()}
+        {gameState === 'gameOver' && renderGameOver()}
       </div>
-      
-      <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md">
-        <h3 className="text-xl font-semibold mb-2 text-purple-700">Logros</h3>
-        <p className="text-gray-700">Categorías completadas: {achievements} / {cardData.individual.length + cardData.group.length}</p>
-        <div className="mt-2 bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-purple-600 h-2.5 rounded-full"
-            style={{ width: `${(achievements / (cardData.individual.length + cardData.group.length)) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <button onClick={onBack} className="mt-6 px-4 py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition duration-300 flex items-center">
-        <ArrowLeft size={20} className="mr-2" /> Volver a Juegos
-      </button>
     </div>
   );
 };
 
-export default CardGame;
+export default LocalMultiplayerCardGame;
