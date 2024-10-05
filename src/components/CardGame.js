@@ -1,5 +1,620 @@
 import React, { useState, useEffect } from 'react';
-import './CardGame.css'; // Mover los estilos al archivo CSS
+import styled from 'styled-components';
+
+// CSS Styling with Styled-components
+const GameContainer = styled.div`
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  background-color: #f3f3f3;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  margin: 50px auto;
+`;
+
+const Button = styled.button`
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+  margin: 0.8rem;
+  border: none;
+  border-radius: 50px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #2980b9;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  &:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+  }
+`;
+
+const DisabledButton = styled(Button)`
+  background-color: #e74c3c;
+  color: #fff;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+
+  &:disabled {
+    background-color: #bdc3c7;
+  }
+`;
+
+const Input = styled.input`
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem;
+  border: 2px solid #3498db;
+  border-radius: 50px;
+  outline: none;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+  }
+`;
+
+const CardContainer = styled.div`
+  width: 350px;
+  height: 250px;
+  margin: 2rem auto;
+  perspective: 1000px;
+  cursor: pointer;
+`;
+
+const CardInner = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  transform: ${({ flipped }) => (flipped ? 'rotateY(180deg)' : 'rotateY(0deg)')};
+`;
+
+const CardFace = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  box-sizing: border-box;
+`;
+
+const CardFront = styled(CardFace)`
+  background-color: #3498db;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+`;
+
+const CardBack = styled(CardFace)`
+  background-color: #ffffff;
+  color: #34495e;
+  transform: rotateY(180deg);
+  font-size: 1rem;
+  overflow-y: auto;
+`;
+
+const TimerDisplay = styled.div`
+  font-size: 1.8rem;
+  color: #e74c3c;
+  font-weight: bold;
+  margin: 1rem 0;
+`;
+
+const RoundDisplay = styled.div`
+  font-size: 1.5rem;
+  color: #2980b9;
+  font-weight: bold;
+  margin: 1rem 0;
+`;
+
+const Scoreboard = styled.div`
+  margin-top: 2rem;
+  text-align: center;
+
+  h3 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    background-color: #ffffff;
+    margin: 0.8rem 0;
+    padding: 0.8rem 1.2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  span {
+    font-weight: bold;
+    color: #e67e22;
+  }
+`;
+
+const HistoryContainer = styled.div`
+  margin-top: 2rem;
+  text-align: left;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+`;
+
+const HistoryItem = styled.div`
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #ecf0f1;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+`;
+
+const AnsweredCardsButton = styled(Button)`
+  background-color: #27ae60;
+  &:hover {
+    background-color: #1e8449;
+  }
+`;
+
+const ModalBackground = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-height: 80%;
+  overflow-y: auto;
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    background-color: #3498db;
+    color: white;
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const ApprovalSection = styled.div`
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const ApprovalLabel = styled.label`
+  display: flex;
+  align-items: center;
+  margin: 0.5rem;
+  font-size: 1rem;
+  color: #34495e;
+
+  input {
+    margin-right: 0.5rem;
+    transform: scale(1.5);
+    cursor: pointer;
+  }
+
+  input:checked {
+    accent-color: #27ae60; /* Color of the checkbox when checked */
+  }
+
+  input:disabled {
+    accent-color: #e74c3c; /* Color of the checkbox when disabled */
+  }
+`;
+
+const CardGame = () => {
+  const [numPlayers, setNumPlayers] = useState(2);
+  const [players, setPlayers] = useState([]);
+  const [playerNames, setPlayerNames] = useState([]);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [cards, setCards] = useState([...gameData.preguntas, ...gameData.roleplaying]);
+  const [flipped, setFlipped] = useState(false);
+  const [currentTargetPlayer, setCurrentTargetPlayer] = useState(null);
+  const [approvalMode, setApprovalMode] = useState(false);
+  const [approvedBy, setApprovedBy] = useState([]);
+  const [timer, setTimer] = useState(600); // 10 minutes
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const [playersAnsweredThisRound, setPlayersAnsweredThisRound] = useState([]);
+  const [playersAskedThisRound, setPlayersAskedThisRound] = useState([]);
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [gameHistory, setGameHistory] = useState([]);
+  const [answeredCards, setAnsweredCards] = useState([]);
+  const [showAnsweredCards, setShowAnsweredCards] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false);
+
+  // Control del temporizador
+  useEffect(() => {
+    let timerInterval;
+    if (isTimerActive) {
+      timerInterval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev > 0) return prev - 1;
+          clearInterval(timerInterval);
+          nextTurn(); // Pasar al siguiente turno si se acaba el tiempo
+          return 0;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(timerInterval);
+  }, [isTimerActive]);
+
+  // Configurar los jugadores después de ingresar la información
+  const handleSetPlayers = () => {
+    if (playerNames.some((name) => name.trim() === "")) {
+      alert("Por favor ingresa todos los nombres de los jugadores.");
+      return;
+    }
+
+    const newPlayers = playerNames.map((name) => ({
+      name: name.trim(),
+      starsReceived: 0,
+      starsToGive: 8,
+    }));
+    setPlayers(newPlayers);
+  };
+
+  // Manejar cambios en el nombre de los jugadores
+  const handleNameChange = (index, value) => {
+    const newPlayerNames = [...playerNames];
+    newPlayerNames[index] = value;
+    setPlayerNames(newPlayerNames);
+  };
+
+  // Voltear la carta para revelar la pregunta
+  const handleCardFlip = () => {
+    if (cards.length === 0) {
+      alert("No hay más preguntas disponibles.");
+      return;
+    }
+    setFlipped(true);
+  };
+
+  // Seleccionar el destinatario para la pregunta
+  const handleSelectTargetPlayer = (playerName) => {
+    if (!flipped) {
+      alert("Debes revelar la carta antes de seleccionar un destinatario.");
+      return;
+    }
+    if (playersAnsweredThisRound.includes(playerName) || playerName === players[currentPlayerIndex].name) {
+      alert("Este jugador ya fue seleccionado en esta ronda o eres tú mismo. Elige otro.");
+      return;
+    }
+    setCurrentTargetPlayer(playerName);
+    setShowConfirmButton(true);
+  };
+
+  // Confirmar al destinatario seleccionado e iniciar el temporizador
+  const handleConfirmTargetPlayer = () => {
+    setIsTimerActive(true);
+    setShowConfirmButton(false);
+    setPlayersAnsweredThisRound((prev) => [...prev, currentTargetPlayer]);
+    setPlayersAskedThisRound((prev) => [...prev, players[currentPlayerIndex].name]);
+  };
+
+  // Manejar la respuesta del jugador
+  const handleResponse = (answered) => {
+    if (answered) {
+      setApprovalMode(true);
+      setIsTimerActive(false); // Detener el temporizador cuando el jugador responde
+    } else {
+      finalizeTurn();
+    }
+  };
+
+  // Manejar la aprobación de otros jugadores
+  const handleApprovalChange = (playerName, isApproved) => {
+    if (isApproved) {
+      if (!approvedBy.includes(playerName)) {
+        setApprovedBy([...approvedBy, playerName]);
+      }
+    } else {
+      setApprovedBy(approvedBy.filter((name) => name !== playerName));
+    }
+  };
+
+  // Finalizar el turno actual
+  const finalizeTurn = () => {
+    const targetPlayerIndex = players.findIndex((player) => player.name === currentTargetPlayer);
+    const updatedPlayers = [...players];
+
+    approvedBy.forEach((approvingPlayerName) => {
+      const approvingPlayerIndex = players.findIndex(
+        (player) => player.name === approvingPlayerName
+      );
+
+      // Restar estrellas disponibles para dar del aprobador
+      if (updatedPlayers[approvingPlayerIndex].starsToGive > 0) {
+        updatedPlayers[approvingPlayerIndex].starsToGive -= 1;
+        updatedPlayers[targetPlayerIndex].starsReceived += 1; // Sumar estrellas al destinatario
+      }
+    });
+
+    setPlayers(updatedPlayers);
+
+    const timeSpent = 600 - timer;
+    setGameHistory((prevHistory) => [
+      ...prevHistory,
+      {
+        turn: currentPlayerIndex + 1,
+        askingPlayer: players[currentPlayerIndex].name,
+        targetPlayer: currentTargetPlayer,
+        timeSpent: timeSpent,
+        approvedBy: approvedBy,
+        round: roundNumber,
+      },
+    ]);
+
+    setAnsweredCards((prev) => [
+      ...prev,
+      { question: cards[0].texto, targetPlayer: currentTargetPlayer, approvedBy: approvedBy, round: roundNumber },
+    ]);
+
+    // Verificar si algún jugador ha ganado el juego
+    checkWinner(updatedPlayers);
+
+    setApprovedBy([]); // Reset approvedBy for the next turn
+    nextTurn();
+  };
+
+  // Avanzar al siguiente turno
+  const nextTurn = () => {
+    // Si todos los jugadores han preguntado y respondido, iniciar una nueva ronda
+    if (playersAskedThisRound.length === players.length) {
+      setPlayersAnsweredThisRound([]);
+      setPlayersAskedThisRound([]);
+      setRoundNumber(roundNumber + 1);
+    }
+  
+    let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    let attempts = 0;
+  
+    // Agregar un límite de intentos para evitar ciclos infinitos
+    while (playersAskedThisRound.includes(players[nextPlayerIndex].name) && attempts < players.length) {
+      nextPlayerIndex = (nextPlayerIndex + 1) % players.length;
+      attempts++;
+  
+      // Si todos los jugadores han preguntado en esta ronda, romper el bucle
+      if (attempts >= players.length) {
+        break;
+      }
+    }
+  
+    // Actualizar el jugador actual si se ha encontrado un jugador válido
+    if (!playersAskedThisRound.includes(players[nextPlayerIndex].name)) {
+      setCurrentPlayerIndex(nextPlayerIndex);
+    }
+  
+    setIsTimerActive(false);
+    setTimer(600);
+    setFlipped(false);
+    setCurrentTargetPlayer(null);
+    setApprovalMode(false);
+    setCards((prevCards) => prevCards.slice(1));
+  };
+  
+
+  // Mostrar las cartas respondidas en un modal
+  const toggleAnsweredCards = () => {
+    setShowAnsweredCards(!showAnsweredCards);
+  };
+
+  // Verificar si algún jugador ha ganado el juego
+  const checkWinner = (updatedPlayers) => {
+    let potentialWinner = null;
+
+    updatedPlayers.forEach((player) => {
+      if (player.starsToGive === 0) {
+        if (
+          !potentialWinner ||
+          player.starsReceived > potentialWinner.starsReceived
+        ) {
+          potentialWinner = player;
+        }
+      }
+    });
+
+    if (potentialWinner) {
+      setGameEnded(true);
+      alert(`¡El ganador es ${potentialWinner.name} con ${potentialWinner.starsReceived} estrellas!`);
+    }
+  };
+
+  return (
+    <GameContainer>
+      <h1>Juego de Cartas de Preguntas</h1>
+      <RoundDisplay>Ronda Actual: {roundNumber}</RoundDisplay>
+      {!players.length ? (
+        <div>
+          <Input
+            type="number"
+            value={numPlayers}
+            onChange={(e) => setNumPlayers(parseInt(e.target.value))}
+            min="2"
+            max="8"
+          />
+          {[...Array(numPlayers)].map((_, index) => (
+            <Input
+              key={index}
+              type="text"
+              placeholder={`Nombre del jugador ${index + 1}`}
+              value={playerNames[index] || ''}
+              onChange={(e) => handleNameChange(index, e.target.value)}
+            />
+          ))}
+          <Button onClick={handleSetPlayers}>Establecer jugadores</Button>
+        </div>
+      ) : gameEnded ? (
+        <div>
+          <h2>¡El juego ha terminado!</h2>
+          <Button onClick={() => window.location.reload()}>Salir del Juego</Button>
+        </div>
+      ) : (
+        <div>
+          <h2>Turno de: {players[currentPlayerIndex].name}</h2>
+          {currentTargetPlayer && (
+            <h4>Destinatario: {currentTargetPlayer}</h4>
+          )}
+          <CardContainer onClick={handleCardFlip}>
+            <CardInner flipped={flipped}>
+              <CardFront>Pregunta</CardFront>
+              <CardBack>{cards.length ? cards[0].texto : 'No hay más preguntas'}</CardBack>
+            </CardInner>
+          </CardContainer>
+          {flipped && !currentTargetPlayer && (
+            <div>
+              <h3>Selecciona el jugador destinatario:</h3>
+              {players.map((player) => (
+                playersAnsweredThisRound.includes(player.name) || player.name === players[currentPlayerIndex].name ? (
+                  <DisabledButton key={player.name} disabled>
+                    {player.name}
+                  </DisabledButton>
+                ) : (
+                  <Button
+                    key={player.name}
+                    onClick={() => handleSelectTargetPlayer(player.name)}
+                  >
+                    {player.name}
+                  </Button>
+                )
+              ))}
+            </div>
+          )}
+          {showConfirmButton && (
+            <div>
+              <Button onClick={handleConfirmTargetPlayer}>Confirmar Destinatario</Button>
+            </div>
+          )}
+          {isTimerActive && (
+            <div>
+              <TimerDisplay>
+                Temporizador: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+              </TimerDisplay>
+              <Button onClick={() => handleResponse(true)}>Respondió la Pregunta</Button>
+              <Button onClick={() => handleResponse(false)}>No Respondió la Pregunta</Button>
+            </div>
+          )}
+          {approvalMode && (
+            <ApprovalSection>
+              <h3>¿Quién aprueba la respuesta?</h3>
+              {players
+                .filter((player) => player.name !== currentTargetPlayer)
+                .map((player) => (
+                  <ApprovalLabel key={player.name}>
+                    <input
+                      type="checkbox"
+                      onChange={(e) =>
+                        handleApprovalChange(player.name, e.target.checked)
+                      }
+                      disabled={player.starsToGive === 0}
+                    />
+                    {player.name} ({player.starsToGive} estrellas restantes)
+                  </ApprovalLabel>
+                ))}
+              <Button onClick={finalizeTurn}>Enviar Aprobaciones y Pasar Turno</Button>
+            </ApprovalSection>
+          )}
+          <Scoreboard>
+            <h3>Tabla de Puntuaciones:</h3>
+            <ul>
+              {players.map((player) => (
+                <li key={player.name}>
+                  {player.name}: <span>{player.starsReceived}</span> estrellas recibidas,{' '}
+                  <span>{player.starsToGive}</span> estrellas para dar
+                </li>
+              ))}
+            </ul>
+          </Scoreboard>
+          <AnsweredCardsButton onClick={toggleAnsweredCards}>
+            {showAnsweredCards ? 'Ocultar Cartas Respondidas' : 'Ver Cartas Respondidas'}
+          </AnsweredCardsButton>
+          {showAnsweredCards && (
+            <ModalBackground onClick={toggleAnsweredCards}>
+              <ModalContent>
+                <h3>Cartas Respondidas:</h3>
+                <ul>
+                  {answeredCards.map((card, index) => (
+                    <li key={index}>
+                      Pregunta: "{card.question}", Respondida por: {card.targetPlayer}, Aprobada por:{' '}
+                      {card.approvedBy.join(', ')}, Ronda: {card.round}
+                    </li>
+                  ))}
+                </ul>
+              </ModalContent>
+            </ModalBackground>
+          )}
+          <HistoryContainer>
+            <h3>Historial del Juego:</h3>
+            {gameHistory.map((historyItem, index) => (
+              <HistoryItem key={index}>
+                <p>Turno {historyItem.turn} (Ronda {historyItem.round}):</p>
+                <p>Jugador que preguntó: {historyItem.askingPlayer}</p>
+                <p>Jugador que respondió: {historyItem.targetPlayer}</p>
+                <p>Tiempo utilizado: {Math.floor(historyItem.timeSpent / 60)}:{(historyItem.timeSpent % 60).toString().padStart(2, '0')} minutos</p>
+                <p>Jugadores que aprobaron: {historyItem.approvedBy.join(', ')}</p>
+              </HistoryItem>
+            ))}
+          </HistoryContainer>
+        </div>
+      )}
+    </GameContainer>
+  );
+};
+
+
+
 
 const gameData = {
   "preguntas": [
@@ -191,183 +806,5 @@ const gameData = {
     }
  ]
         };
-
-const CardGame = () => {
-  const [players, setPlayers] = useState([]);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [cards, setCards] = useState([...gameData.preguntas, ...gameData.roleplaying]);
-  const [gameState, setGameState] = useState('setup');
-  const [currentRound, setCurrentRound] = useState(1);
-  const [timer, setTimer] = useState(600);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [currentTargetPlayer, setCurrentTargetPlayer] = useState(null);
-  const [playersAnsweredThisRound, setPlayersAnsweredThisRound] = useState([]);
-  const [roundHistory, setRoundHistory] = useState([]);
-  const [winner, setWinner] = useState(null);
-
-  useEffect(() => {
-    if (isTimerRunning && timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    } else if (timer === 0) {
-      setIsTimerRunning(false);
-      alert('¡Se acabó el tiempo!');
-      nextTurn();
-    }
-  }, [isTimerRunning, timer]);
-
-  const handleSetPlayers = (numPlayers) => {
-    const playerNames = Array.from({ length: numPlayers }, (_, index) => ({
-      name: `Jugador ${index + 1}`,
-      starsReceived: 0,
-      starsToGive: 8,
-    }));
-    setPlayers(playerNames);
-  };
-
-  const handleStartGame = () => {
-    if (players.some((player) => player.name.trim() === "")) {
-      alert("Por favor, ingresa todos los nombres de los jugadores.");
-      return;
-    }
-    setGameState('playing');
-  };
-
-  const handleCardSelect = (cardIndex) => {
-    setSelectedCard(cards[cardIndex]);
-    setCards(cards.filter((_, index) => index !== cardIndex));
-  };
-
-  const handleTargetSelect = (targetPlayerIndex) => {
-    setCurrentTargetPlayer(targetPlayerIndex);
-  };
-
-  const handleAnswer = (answered) => {
-    setIsTimerRunning(false);
-    if (answered) {
-      setGameState('rating');
-    } else {
-      nextTurn();
-    }
-  };
-
-  const ratePlayer = (ratingPlayerIndex, stars) => {
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player, index) => {
-        if (index === currentPlayerIndex) {
-          return { ...player, starsReceived: player.starsReceived + stars };
-        }
-        if (index === ratingPlayerIndex) {
-          return { ...player, starsToGive: player.starsToGive - stars };
-        }
-        return player;
-      })
-    );
-  };
-
-  const nextTurn = () => {
-    if (cards.length === 0) {
-      endGame();
-      return;
-    }
-    setSelectedCard(null);
-    setCurrentTargetPlayer(null);
-    setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
-    setPlayersAnsweredThisRound([]);
-    setTimer(600);
-    setGameState('playing');
-  };
-
-  const endGame = () => {
-    setGameState('gameOver');
-    const winningPlayer = players.reduce((max, player) =>
-      player.starsReceived > max.starsReceived ? player : max,
-      players[0]
-    );
-    setWinner(winningPlayer);
-  };
-
-  const renderSetup = () => (
-    <div className="flex flex-col items-center space-y-4">
-      <h2 className="text-2xl font-bold">Configurar Juego</h2>
-      <div className="flex items-center space-x-2">
-        <label htmlFor="numPlayers">Número de Jugadores:</label>
-        <input
-          id="numPlayers"
-          type="number"
-          min="2"
-          max="8"
-          defaultValue="2"
-          onChange={(e) => handleSetPlayers(parseInt(e.target.value))}
-          className="border rounded px-2 py-1"
-        />
-      </div>
-      <button onClick={handleStartGame} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Comenzar Juego
-      </button>
-    </div>
-  );
-
-  const renderPlaying = () => (
-    <div className="flex flex-col items-center space-y-4">
-      <h2 className="text-2xl font-bold">Turno de {players[currentPlayerIndex].name}</h2>
-      {selectedCard && (
-        <div className="mt-4">
-          <p>Selecciona a quién hacer la pregunta:</p>
-          <div className="flex space-x-2 mt-2">
-            {players.map((player, index) => (
-              index !== currentPlayerIndex && (
-                <button
-                  key={index}
-                  onClick={() => handleTargetSelect(index)}
-                  className={`px-2 py-1 border rounded ${currentTargetPlayer === index ? 'bg-green-200' : 'bg-white'}`}
-                >
-                  {player.name}
-                </button>
-              )
-            ))}
-          </div>
-        </div>
-      )}
-      {currentTargetPlayer !== null && (
-        <div className="mt-4">
-          <p>Tiempo restante: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</p>
-          <div className="flex space-x-2 mt-2">
-            <button onClick={() => handleAnswer(true)} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-              Contestó
-            </button>
-            <button onClick={() => handleAnswer(false)} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-              No Contestó
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderGameOver = () => (
-    <div className="flex flex-col items-center space-y-4">
-      <h2 className="text-2xl font-bold">Juego Terminado</h2>
-      <p>¡El ganador es {winner.name} con {winner.starsReceived} estrellas!</p>
-      <button onClick={() => setGameState('setup')} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Jugar de Nuevo
-      </button>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-2xl w-full">
-        <h1 className="text-3xl font-bold mb-6 text-center">Juego de Cartas de Preguntas</h1>
-        {gameState === 'setup' && renderSetup()}
-        {gameState === 'playing' && renderPlaying()}
-        {gameState === 'gameOver' && renderGameOver()}
-      </div>
-    </div>
-  );
-};
 
 export default CardGame;

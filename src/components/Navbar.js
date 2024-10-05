@@ -6,12 +6,14 @@ function Navbar({ setCurrentPage }) {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  // Actualizamos los items del menú para incluir "Juego de Cartas"
   const navItems = [
     { name: 'Amigos', page: 'friends' },
     { name: 'Juegos', page: 'games' },
     { name: 'Canjear', page: 'redeem' },
     { name: 'Anuncios', page: 'ads' },
     { name: 'Yo', page: 'profile' },
+    { name: 'Juego de Cartas', page: 'cardgame' }, // Nueva opción para Juego de Cartas
   ];
 
   const NavButton = ({ name, page }) => (
@@ -35,6 +37,7 @@ function Navbar({ setCurrentPage }) {
           </button>
           
           <div className="hidden md:flex space-x-4">
+            {/* Renderizamos todos los items del menú */}
             {navItems.map((item) => (
               <NavButton key={item.page} {...item} />
             ))}
@@ -50,6 +53,7 @@ function Navbar({ setCurrentPage }) {
           </div>
         </div>
         
+        {/* Menú móvil */}
         {isOpen && (
           <div className="mt-4 md:hidden">
             {navItems.map((item) => (
