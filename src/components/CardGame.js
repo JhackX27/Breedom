@@ -416,27 +416,27 @@ const CardGame = () => {
       setPlayersAnsweredThisRound([]);
       setPlayersAskedThisRound([]);
       setRoundNumber(roundNumber + 1);
+  
+      // Elegir un nuevo jugador aleatoriamente para iniciar la nueva ronda
+      const newFirstPlayerIndex = Math.floor(Math.random() * players.length);
+      setCurrentPlayerIndex(newFirstPlayerIndex);
+      setIsTimerActive(false);
+      setTimer(600);
+      setFlipped(false);
+      setCurrentTargetPlayer(null);
+      setApprovalMode(false);
+      setCards((prevCards) => prevCards.slice(1));
+      return;
     }
   
     let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    let attempts = 0;
   
-    // Agregar un límite de intentos para evitar ciclos infinitos
-    while (playersAskedThisRound.includes(players[nextPlayerIndex].name) && attempts < players.length) {
+    // Asegurarse de que el siguiente jugador no sea uno que ya haya preguntado en esta ronda
+    while (playersAskedThisRound.includes(players[nextPlayerIndex].name)) {
       nextPlayerIndex = (nextPlayerIndex + 1) % players.length;
-      attempts++;
-  
-      // Si todos los jugadores han preguntado en esta ronda, romper el bucle
-      if (attempts >= players.length) {
-        break;
-      }
     }
   
-    // Actualizar el jugador actual si se ha encontrado un jugador válido
-    if (!playersAskedThisRound.includes(players[nextPlayerIndex].name)) {
-      setCurrentPlayerIndex(nextPlayerIndex);
-    }
-  
+    setCurrentPlayerIndex(nextPlayerIndex);
     setIsTimerActive(false);
     setTimer(600);
     setFlipped(false);
@@ -444,6 +444,7 @@ const CardGame = () => {
     setApprovalMode(false);
     setCards((prevCards) => prevCards.slice(1));
   };
+  
   
 
   // Mostrar las cartas respondidas en un modal
