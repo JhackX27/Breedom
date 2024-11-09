@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+// Función para mezclar un array
+const shuffleArray = (array) => {
+  return array.sort(() => Math.random() - 0.5);
+};
+
+
 // CSS Styling with Styled-components
 const GameContainer = styled.div`
   font-family: 'Arial', sans-serif;
@@ -258,7 +264,8 @@ const CardGame = () => {
   const [players, setPlayers] = useState([]);
   const [playerNames, setPlayerNames] = useState([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [cards, setCards] = useState([...gameData.preguntas, ...gameData.roleplaying]);
+  const [cards, setCards] = useState(shuffleArray([...gameData.preguntas, ...gameData.roleplaying]));
+
   const [flipped, setFlipped] = useState(false);
   const [currentTargetPlayer, setCurrentTargetPlayer] = useState(null);
   const [approvalMode, setApprovalMode] = useState(false);
@@ -273,6 +280,10 @@ const CardGame = () => {
   const [answeredCards, setAnsweredCards] = useState([]);
   const [showAnsweredCards, setShowAnsweredCards] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
+
+
+  
+
 
   // Control del temporizador
   useEffect(() => {
@@ -297,14 +308,20 @@ const CardGame = () => {
       alert("Por favor ingresa todos los nombres de los jugadores.");
       return;
     }
-
+  
     const newPlayers = playerNames.map((name) => ({
       name: name.trim(),
       starsReceived: 0,
       starsToGive: 8,
     }));
     setPlayers(newPlayers);
+  
+    // Mezclar las preguntas al iniciar el juego
+    setCards(shuffleArray([...gameData.preguntas, ...gameData.roleplaying]));
   };
+
+
+  
 
   // Manejar cambios en el nombre de los jugadores
   const handleNameChange = (index, value) => {
@@ -416,7 +433,10 @@ const CardGame = () => {
       setPlayersAnsweredThisRound([]);
       setPlayersAskedThisRound([]);
       setRoundNumber(roundNumber + 1);
-  
+    
+      // Mezclar las preguntas para la nueva ronda
+      setCards(shuffleArray([...gameData.preguntas, ...gameData.roleplaying]));
+    
       // Elegir un nuevo jugador aleatoriamente para iniciar la nueva ronda
       const newFirstPlayerIndex = Math.floor(Math.random() * players.length);
       setCurrentPlayerIndex(newFirstPlayerIndex);
@@ -425,9 +445,9 @@ const CardGame = () => {
       setFlipped(false);
       setCurrentTargetPlayer(null);
       setApprovalMode(false);
-      setCards((prevCards) => prevCards.slice(1));
       return;
     }
+    
   
     let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
   
