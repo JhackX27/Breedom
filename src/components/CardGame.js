@@ -345,13 +345,24 @@ const CardGame = () => {
       alert("Debes revelar la carta antes de seleccionar un destinatario.");
       return;
     }
+  
+    // Si solo hay 2 jugadores, permitir seleccionar al otro jugador directamente
+    if (players.length === 2 && playerName !== players[currentPlayerIndex].name) {
+      setCurrentTargetPlayer(playerName);
+      setShowConfirmButton(true);
+      return;
+    }
+  
+    // Validar si el jugador ya ha respondido o es el jugador actual
     if (playersAnsweredThisRound.includes(playerName) || playerName === players[currentPlayerIndex].name) {
       alert("Este jugador ya fue seleccionado en esta ronda o eres tú mismo. Elige otro.");
       return;
     }
+  
     setCurrentTargetPlayer(playerName);
     setShowConfirmButton(true);
   };
+  
 
   // Confirmar al destinatario seleccionado e iniciar el temporizador
   const handleConfirmTargetPlayer = () => {
@@ -536,8 +547,24 @@ const CardGame = () => {
           </CardContainer>
           {flipped && !currentTargetPlayer && (
             <div>
-              <h3>Selecciona el jugador destinatario:</h3>
-              {players.map((player) => (
+            <h3>Selecciona el jugador destinatario:</h3>
+            {players.length === 2 ? (
+              players.map((player) => (
+                player.name !== players[currentPlayerIndex].name ? (
+                  <Button
+                    key={player.name}
+                    onClick={() => handleSelectTargetPlayer(player.name)}
+                  >
+                    {player.name}
+                  </Button>
+                ) : (
+                  <DisabledButton key={player.name} disabled>
+                    {player.name} (Tú mismo)
+                  </DisabledButton>
+                )
+              ))
+            ) : (
+              players.map((player) => (
                 playersAnsweredThisRound.includes(player.name) || player.name === players[currentPlayerIndex].name ? (
                   <DisabledButton key={player.name} disabled>
                     {player.name}
@@ -550,8 +577,10 @@ const CardGame = () => {
                     {player.name}
                   </Button>
                 )
-              ))}
-            </div>
+              ))
+            )}
+          </div>
+          
           )}
           {showConfirmButton && (
             <div>
